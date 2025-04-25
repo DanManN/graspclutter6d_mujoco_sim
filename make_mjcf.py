@@ -104,7 +104,7 @@ for obj, pose in zip(objs, poses):
 
     # new_frame = trimesh.transformations.rotation_matrix(np.pi/2, [0, 0, 1])
     new_frame = np.eye(4)
-    new_frame[:3, 3] = [1.6, 0, 1.6]
+    new_frame[:3, 3] = [1.7, 0, 1.6]
     pose = np.dot(new_frame, pose)
 
     position = pose[:3, 3]
