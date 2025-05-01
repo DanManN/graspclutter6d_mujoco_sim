@@ -457,10 +457,14 @@ class GraspClutter6D():
             s = 10000.0
         
         if align:
-            camera_poses = np.load(os.path.join(self.root, 'scenes', 'scene_%04d' % sceneId, camera, 'camera_poses.npy'))
-            camera_pose = camera_poses[imgId]
-            align_mat = np.load(os.path.join(self.root, 'scenes', 'scene_%04d' % sceneId, camera, 'cam0_wrt_table.npy'))
-            camera_pose = align_mat.dot(camera_pose)
+            scene_camera_path = os.path.join(self.root, 'scenes', '%06d'%sceneId, 'scene_camera.json')
+            with open(scene_camera_path) as f:
+                scene_camera = json.load(f)
+            cam_R_w2c = np.array(scene_camera[str(imgId)]['cam_R_w2c']).reshape((3,3))
+            cam_t_w2c = np.array(scene_camera[str(imgId)]['cam_t_w2c']).reshape((3,1))
+            camera_pose = np.eye(4)
+            camera_pose[:3,:3] = cam_R_w2c
+            camera_pose[:3,3] = cam_t_w2c.squeeze() / 1000.0
 
         xmap, ymap = np.arange(colors.shape[1]), np.arange(colors.shape[0])
         xmap, ymap = np.meshgrid(xmap, ymap)
