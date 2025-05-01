@@ -1,5 +1,5 @@
 # Install Requirements
-1. Download the [graspclutter6d datasethttps](https://sites.google.com/view/graspclutter6d/dataset)
+1. Download the [graspclutter6d dataset](https://sites.google.com/view/graspclutter6d/dataset)
 2. Set the environment variable GC6D_ROOT (e.g. `export GC6D_ROOT=/path/to/GraspClutter6D`)
 3. Install obj2mjcf: `pip install --upgrade obj2mjcf`
 4. Parse the obj model files with obj2mjcf: `obj2mjcf --obj-dir $GC6D_ROOT/models_obj_m --decompose --save-mjcf`
