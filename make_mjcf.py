@@ -171,7 +171,7 @@ for obj, pose in zip(objs, poses):
     )
 
     for entry in obj_body:
-        if 'material' in entry.keys():
+        if entry.get('class') == 'visual':
             geom = ET.SubElement(
                 body, 'geom', {
                     'name': f'{resource_name}_geom',
@@ -179,10 +179,11 @@ for obj, pose in zip(objs, poses):
                     'contype': '0',
                     'conaffinity': '0',
                     'group': '1',
-                    'material': f'{resource_name}_mat',
                     'mesh': f'{resource_name}_vis',
                 }
             )
+            if entry.get('material') is not None:
+                geom.set('material', f'{resource_name}_mat')
         else:
             geom = ET.SubElement(
                 body,
@@ -209,4 +210,5 @@ while viewer.is_alive:
     viewer.render()
 
 # Save the modified MJCF XML
+ET.indent(root)
 root.write(f'scene{sceneId}.xml')
