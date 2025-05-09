@@ -58,6 +58,8 @@ if 'GC6D_ROOT' not in os.environ:
 else:
     gc6d_root = os.environ['GC6D_ROOT']
 
+if len(sys.argv) == 2:
+    sys.argv.append('template_shelf.xml')
 if len(sys.argv) < 3:
     print(
         'Usage: python make_mjcf.py <sceneId> <template_mjcf_xml_file>\n'
@@ -82,7 +84,7 @@ models, objs, poses = generate_scene_model(
     align=True,
 )
 print(objs, len(objs))
-o3d.visualization.draw_geometries(models)
+# o3d.visualization.draw_geometries(models)
 meshes = g.loadObjSimple(objIds=objs)
 # scene = trimesh.scene.Scene()
 # for mesh, pose in zip(meshes, poses):
@@ -91,6 +93,17 @@ meshes = g.loadObjSimple(objIds=objs)
 # scene.show()
 
 root = ET.parse(sys.argv[2])
+
+com = root.findall('.//compiler')
+
+if len(com) == 0:
+    com = ET.SubElement(root, 'compiler')
+else:
+    # There should only be one compiler
+    com = com[0]
+
+com.set('meshdir', gc6d_root)
+com.set('texturedir', gc6d_root)
 
 asset = root.findall('.//asset')[0]
 worldbody = root.findall('.//worldbody')[0]
@@ -110,7 +123,7 @@ for obj, pose in zip(objs, poses):
     position = pose[:3, 3]
     quaternion = trimesh.transformations.quaternion_from_matrix(pose)
 
-    obj_xml = ET.parse(f'../{prefix}/{object_name}.xml')
+    obj_xml = ET.parse(f'{gc6d_root}/{prefix}/{object_name}.xml')
     obj_asset = obj_xml.findall('.//asset')[0]
     obj_body = obj_xml.findall('.//body')[0]
 
@@ -202,6 +215,7 @@ for obj, pose in zip(objs, poses):
 # compile to test
 curdir = os.path.abspath(os.path.curdir)
 string = ET.tostring(root.getroot()).decode().replace('models/rs_table', curdir)
+# print(string)
 model = mujoco.MjModel.from_xml_string(string)
 data = mujoco.MjData(model)
 viewer = mujoco_viewer.MujocoViewer(model, data, mode='window')
@@ -211,4 +225,4 @@ while viewer.is_alive:
 
 # Save the modified MJCF XML
 ET.indent(root)
-root.write(f'scene{sceneId}.xml')
+root.write(f'scenes/scene{sceneId}.xml')
