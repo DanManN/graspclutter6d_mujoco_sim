@@ -48,7 +48,7 @@ if [ ! -f "$category_csv" ]; then
     exit 1
 fi
 
-start_index=20  # For example, start from line 5 (index starts from 0)
+start_index=0  # For example, start from line 5 (index starts from 0)
 
 # Initialize counter
 counter=0
