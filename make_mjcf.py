@@ -66,6 +66,12 @@ if len(sys.argv) < 3:
         'Example: python make_mjcf.py 1 template_shelf.xml'
     )
     exit(0)
+if len(sys.argv) == 4:
+    category_name = sys.argv[3]
+else: category_name = ""
+assert category_name in ["", 
+"shelf_structured", "shelf_unstructured", 
+"tabletop_structured", "tabletop_unstructured"]
 
 sceneId = int(sys.argv[1])
 annId = 3  # 1~13
@@ -114,6 +120,8 @@ meshes = g.loadObjSimple(objIds=objs)
 # scene.show()
 
 root = ET.parse(sys.argv[2])
+
+size = ET.SubElement(root.getroot(), "size", {'memory': '64M'})
 
 com = root.findall('.//compiler')
 
@@ -260,26 +268,33 @@ while viewer.is_alive:
     glfw.poll_events()
 
     # Check if left button is pressed this frame
-    if glfw.get_mouse_button(viewer.window, glfw.MOUSE_BUTTON_LEFT) == glfw.PRESS:
+    # if glfw.get_mouse_button(viewer.window, glfw.MOUSE_BUTTON_LEFT) == glfw.PRESS:
+    # if glfw.get_key(viewer.window, glfw.KEY_SPACE) == glfw.PRESS:
+    if glfw.get_key(viewer.window, glfw.KEY_LEFT_SHIFT) == glfw.PRESS:
         x, y = glfw.get_cursor_pos(viewer.window)
 
         fb_w, fb_h = glfw.get_framebuffer_size(viewer.window)
         aspect = fb_w / fb_h    # width over height :contentReference[oaicite:0]{index=0}
 
-        print(f"Mouse position: {x}, {y}")
+        # print(f"Mouse position: {x}, {y}")
+        # print(f"Frame buffer size: {fb_w}, {fb_h}")
 
         temp = np.empty([3, 1])
         geom_id = -1 * np.ones([1, 1], dtype=np.int32)
         empty = np.empty([1, 1], dtype=np.int32)
-        mujoco.mjv_select(model, data, viewer.vopt, aspect, x/fb_w, y/fb_h, scene, temp, geom_id, empty, empty)
+
+        relx = x/fb_w
+        rely = 1 - y/fb_h
+        mujoco.mjv_select(model, data, viewer.vopt, aspect, relx, rely, scene, temp, geom_id, empty, empty)
 
         if geom_id[0] != -1 and geom_id[0] < model.ngeom:
-            print(geom_id, model.geom(geom_id).name)
+            # print(geom_id, model.geom(geom_id).name)
+            print(geom_id, model.geom(geom_id).name[:-5])
         else: print(geom_id)
     # mujoco.mjv_select(model, data, viewer.mouse.x, viewer.mouse.y)
-    mujoco.mj_step1(model, data)
+    mujoco.mj_step(model, data)
     viewer.render()
 
 # Save the modified MJCF XML
-ET.indent(root)
-root.write(f'scenes/scene{sceneId}.xml')
+# ET.indent(root)
+root.write(f'scenes/{category_name}/scene{sceneId}.xml')
