@@ -84,7 +84,28 @@ models, objs, poses = generate_scene_model(
     align=True,
 )
 print(objs, len(objs))
-# o3d.visualization.draw_geometries(models)
+
+scene_cloud = o3d.geometry.PointCloud()
+for pcd in models:
+    scene_cloud += pcd
+
+# 2. Compute the axis‐aligned bounding box
+scene_bbox = scene_cloud.get_axis_aligned_bounding_box()
+
+# center = [1.7, 0, 1.6]
+# print(dir(scene_bbox))
+
+# Center of surface - offset
+center_of_surface = np.array([1.15, 0, 1.14]) 
+surface_offset = np.array([0.1, 0, 0])
+object_offset = 0.5 * (scene_bbox.min_bound + scene_bbox.max_bound)
+
+center = center_of_surface - surface_offset
+center -= object_offset
+
+print(scene_bbox)
+### TODO: get bounding box and place objects in a consistent place within the scene
+o3d.visualization.draw_geometries(models)
 meshes = g.loadObjSimple(objIds=objs)
 # scene = trimesh.scene.Scene()
 # for mesh, pose in zip(meshes, poses):
@@ -117,7 +138,7 @@ for obj, pose in zip(objs, poses):
 
     # new_frame = trimesh.transformations.rotation_matrix(np.pi/2, [0, 0, 1])
     new_frame = np.eye(4)
-    new_frame[:3, 3] = [1.7, 0, 1.6]
+    new_frame[:3, 3] = center
     pose = np.dot(new_frame, pose)
 
     position = pose[:3, 3]
