@@ -96,8 +96,8 @@ scene_bbox = scene_cloud.get_axis_aligned_bounding_box()
 # print(dir(scene_bbox))
 
 # Center of surface - offset
-center_of_surface = np.array([1.15, 0, 1.14]) 
-surface_offset = np.array([0.1, 0, 0])
+center_of_surface = np.array([0.8, 0, 1.14]) 
+surface_offset = np.array([0.10, 0, 0])
 object_offset = 0.5 * (scene_bbox.min_bound + scene_bbox.max_bound)
 
 center = center_of_surface - surface_offset
@@ -105,7 +105,7 @@ center -= object_offset
 
 print(scene_bbox)
 ### TODO: get bounding box and place objects in a consistent place within the scene
-o3d.visualization.draw_geometries(models)
+# o3d.visualization.draw_geometries(models)
 meshes = g.loadObjSimple(objIds=objs)
 # scene = trimesh.scene.Scene()
 # for mesh, pose in zip(meshes, poses):
@@ -240,8 +240,44 @@ string = ET.tostring(root.getroot()).decode().replace('models/rs_table', curdir)
 model = mujoco.MjModel.from_xml_string(string)
 data = mujoco.MjData(model)
 viewer = mujoco_viewer.MujocoViewer(model, data, mode='window')
+
+opt = viewer.vopt
+cam = viewer.cam
+scene = mujoco.MjvScene(model, maxgeom=model.ngeom)
+
+import glfw
 while viewer.is_alive:
-    mujoco.mj_step(model, data)
+    # before rendering or selection you must update it each frame:
+    mujoco.mjv_updateScene(
+        model, data,
+        opt,              # mjvOption
+        None,             # perturb (None if you’re not doing drag/perturb)
+        cam,              # mjvCamera
+        mujoco.mjtCatBit.mjCAT_ALL,
+        scene
+    )
+
+    glfw.poll_events()
+
+    # Check if left button is pressed this frame
+    if glfw.get_mouse_button(viewer.window, glfw.MOUSE_BUTTON_LEFT) == glfw.PRESS:
+        x, y = glfw.get_cursor_pos(viewer.window)
+
+        fb_w, fb_h = glfw.get_framebuffer_size(viewer.window)
+        aspect = fb_w / fb_h    # width over height :contentReference[oaicite:0]{index=0}
+
+        print(f"Mouse position: {x}, {y}")
+
+        temp = np.empty([3, 1])
+        geom_id = -1 * np.ones([1, 1], dtype=np.int32)
+        empty = np.empty([1, 1], dtype=np.int32)
+        mujoco.mjv_select(model, data, viewer.vopt, aspect, x/fb_w, y/fb_h, scene, temp, geom_id, empty, empty)
+
+        if geom_id[0] != -1 and geom_id[0] < model.ngeom:
+            print(geom_id, model.geom(geom_id).name)
+        else: print(geom_id)
+    # mujoco.mjv_select(model, data, viewer.mouse.x, viewer.mouse.y)
+    mujoco.mj_step1(model, data)
     viewer.render()
 
 # Save the modified MJCF XML
