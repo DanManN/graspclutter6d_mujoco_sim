@@ -102,9 +102,10 @@ scene_bbox = scene_cloud.get_axis_aligned_bounding_box()
 # print(dir(scene_bbox))
 
 # Center of surface - offset
-center_of_surface = np.array([0.8, 0, 1.14]) 
-surface_offset = np.array([0.10, 0, 0])
+center_of_surface = np.array([0.8, 0, 1.05]) 
+surface_offset = np.array([0.05, 0, -.03])
 object_offset = 0.5 * (scene_bbox.min_bound + scene_bbox.max_bound)
+object_offset[2] = scene_bbox.min_bound[2]
 
 center = center_of_surface - surface_offset
 center -= object_offset

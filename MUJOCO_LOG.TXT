@@ -19,3 +19,9 @@ WARNING: Insufficient arena memory for the number of constraints generated. Incr
 Thu May 15 17:23:29 2025
 WARNING: Insufficient arena memory for the number of constraints generated. Increase arena memory allocation above 64M bytes. Time = 0.0000.
 
+Fri May 16 15:21:20 2025
+WARNING: Nan, Inf or huge value in QACC at DOF 90. The simulation is unstable. Time = 19.5620.
+
+Fri May 16 16:12:32 2025
+WARNING: Pre-allocated visual geom buffer is full. Increase maxgeom above 368. Time = 3.9340.
+
