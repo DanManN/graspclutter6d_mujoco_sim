@@ -2,6 +2,7 @@ import os
 import time
 import numpy as np
 import open3d as o3d
+import trimesh as tm
 from transforms3d.euler import euler2mat, quat2mat
 from .utils import generate_scene_model, generate_scene_pointcloud, generate_views, get_model_grasps, plot_gripper_pro_max, transform_points
 from .rotation import viewpoint_params_to_matrix, batch_viewpoint_params_to_matrix
@@ -263,15 +264,16 @@ def visObjGrasp(dataset_root, obj_idx, num_grasp=10, th=0.5, max_width=0.08, sav
     - show: bool, show visualization in open3d window if set to True
     '''
     plyfile = os.path.join(dataset_root, 'models_m','obj_%06d.ply' % obj_idx)
-    model = o3d.io.read_point_cloud(plyfile)
+    # model = o3d.io.read_point_cloud(plyfile)
+    model = tm.load_mesh(plyfile)
 
     num_views, num_angles, num_depths = 300, 12, 4
     views = generate_views(num_views)
 
-    vis = o3d.visualization.Visualizer()
-    vis.create_window(width = 1280, height = 720)
-    ctr = vis.get_view_control()
-    param = get_camera_parameters(camera='azure_kinect')
+    # vis = o3d.visualization.Visualizer()
+    # vis.create_window(width = 1280, height = 720)
+    # ctr = vis.get_view_control()
+    # param = get_camera_parameters(camera='azure_kinect')
 
     sampled_points, offsets, scores, _ = get_model_grasps('%s/grasp_label/obj_%06d_labels.npz'%(dataset_root, obj_idx))
 
@@ -303,6 +305,8 @@ def visObjGrasp(dataset_root, obj_idx, num_grasp=10, th=0.5, max_width=0.08, sav
                         continue
                     R = viewpoint_params_to_matrix(-view, angle)
                     t = target_point
+                    # print(score[v, a, d])
+                    # print(R)
                     gripper = plot_gripper_pro_max(t, R, width, depth, 1.1-score[v, a, d])
                     grippers.append(gripper)
                     flag = True
@@ -311,15 +315,16 @@ def visObjGrasp(dataset_root, obj_idx, num_grasp=10, th=0.5, max_width=0.08, sav
         if cnt == num_grasp:
             break
 
-    vis.add_geometry(model)
-    for gripper in grippers:
-        vis.add_geometry(gripper)
-    ctr.convert_from_pinhole_camera_parameters(param)
-    vis.poll_events()
-    filename = os.path.join(save_folder, 'object_{}_grasp.png'.format(obj_idx))
-    vis.capture_screen_image(filename, do_render=True)
-    if show:
-        o3d.visualization.draw_geometries([model, *grippers])
+    return model, grippers
+    # vis.add_geometry(model)
+    # for gripper in grippers:
+    #     vis.add_geometry(gripper)
+    # ctr.convert_from_pinhole_camera_parameters(param)
+    # vis.poll_events()
+    # filename = os.path.join(save_folder, 'object_{}_grasp.png'.format(obj_idx))
+    # vis.capture_screen_image(filename, do_render=True)
+    # if show:
+    #     o3d.visualization.draw_geometries([model, *grippers])
 
 def vis_rec_grasp(rec_grasp_tuples,numGrasp,image_path,save_path,show=False):
     '''

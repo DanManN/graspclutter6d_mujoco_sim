@@ -1,32 +1,29 @@
 import os
+import sys
 import numpy as np
+
 np.float = float
 from graspclutter6dAPI import GraspClutter6D
+from graspclutter6dAPI.utils.vis import visObjGrasp
 import open3d as o3d
+import trimesh as tm
 import cv2
 
-sceneId = 1
-annId = 3 # 1~13
-camera = 'realsense-d415' # 'realsense-d415', 'realsense-d435', 'azure-kinect', 'zivid'
-
-# GraspClutter6D example for loading grasp for a scene.
-
 if 'GC6D_ROOT' not in os.environ:
-    print('Please set the environment variable GC6D_ROOT (e.g. export GC6D_ROOT=/path/to/GraspClutter6D)')
+    print(
+        'Please set the environment variable GC6D_ROOT (e.g. export GC6D_ROOT=/path/to/GraspClutter6D)'
+    )
     exit(0)
 else:
     gc6d_root = os.environ['GC6D_ROOT']
 
-# initialize a GraspNet instance  
-g = GraspClutter6D(gc6d_root, camera=camera, split='train')
+OBJ_ID = int(sys.argv[1])  # Change this to visualize different objects
 
-# load grasps
-# _6d_grasp = g.loadGrasp(sceneId = sceneId, annId = annId, format = '6d', camera = camera, fric_coef_thresh = 0.2)
-# print('6d grasp:\n{}'.format(_6d_grasp))
-g.showObjGrasp([10],numGrasp=50)
-
-# visualize the grasps using open3d
-# geometries = []
-# geometries.append(g.loadScenePointCloud(sceneId = sceneId, annId = annId, camera = camera))
-# geometries += _6d_grasp.random_sample(numGrasp = 20).to_open3d_geometry_list()
-# o3d.visualization.draw_geometries(geometries)
+model, grippers = visObjGrasp(
+    gc6d_root,
+    OBJ_ID,
+    num_grasp=100,
+    th=0.3,
+    max_width=0.085,
+)
+tm.Scene([model]+grippers).show()

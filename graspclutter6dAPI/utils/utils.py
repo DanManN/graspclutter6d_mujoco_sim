@@ -1,4 +1,5 @@
 import os
+import trimesh as tm
 import open3d as o3d
 import numpy as np
 import json
@@ -561,10 +562,13 @@ def plot_gripper_pro_max(center, R, width, depth, score=1, color=None):
     triangles = np.concatenate([left_triangles, right_triangles, bottom_triangles, tail_triangles], axis=0)
     colors = np.array([ [color_r,color_g,color_b] for _ in range(len(vertices))])
 
-    gripper = o3d.geometry.TriangleMesh()
-    gripper.vertices = o3d.utility.Vector3dVector(vertices)
-    gripper.triangles = o3d.utility.Vector3iVector(triangles)
-    gripper.vertex_colors = o3d.utility.Vector3dVector(colors)
+    # gripper = o3d.geometry.TriangleMesh()
+    # gripper.vertices = o3d.utility.Vector3dVector(vertices)
+    # gripper.triangles = o3d.utility.Vector3iVector(triangles)
+    # gripper.vertex_colors = o3d.utility.Vector3dVector(colors)
+    gripper = tm.Trimesh(vertices=vertices, faces=triangles)
+    gripper.visual.face_colors = [color_r,color_g,color_b]
+    gripper.visual.vertex_colors = [color_r,color_g,color_b]
     return gripper
 
 
