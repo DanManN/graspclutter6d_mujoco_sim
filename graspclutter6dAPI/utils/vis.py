@@ -281,6 +281,8 @@ def visObjGrasp(dataset_root, obj_idx, num_grasp=10, th=0.5, max_width=0.08, sav
     point_inds = np.arange(sampled_points.shape[0])
     np.random.shuffle(point_inds)
     grippers = []
+    ee_poses = []
+    pose_scores = []
 
     for point_ind in point_inds:
         target_point = sampled_points[point_ind]
@@ -307,6 +309,11 @@ def visObjGrasp(dataset_root, obj_idx, num_grasp=10, th=0.5, max_width=0.08, sav
                     t = target_point
                     # print(score[v, a, d])
                     # print(R)
+                    pose = np.eye(4)
+                    pose[:3,:3] = R
+                    pose[:3,3] = t
+                    ee_poses.append(pose)
+                    pose_scores.append(score[v, a, d])
                     gripper = plot_gripper_pro_max(t, R, width, depth, 1.1-score[v, a, d])
                     grippers.append(gripper)
                     flag = True
@@ -315,7 +322,7 @@ def visObjGrasp(dataset_root, obj_idx, num_grasp=10, th=0.5, max_width=0.08, sav
         if cnt == num_grasp:
             break
 
-    return model, grippers
+    return model, grippers, ee_poses
     # vis.add_geometry(model)
     # for gripper in grippers:
     #     vis.add_geometry(gripper)
